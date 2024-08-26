@@ -1,0 +1,49 @@
+FROM naxa/python:3.9-slim-v1 as builder
+# Uses naxa/python:3.9-slim-v1 instead of python:3.9-slim so that
+# apt/requirement doesn't have to reinstall everytime
+WORKDIR /code
+
+ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWEITEBYTECODE 1
+
+COPY apt_requirements.txt /code/
+RUN apt-get -y update
+RUN cat apt_requirements.txt | xargs apt -y --no-install-recommends install \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& apt autoremove \
+	&& apt autoclean
+
+ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
+ENV C_INCLUDE_PATH=/usr/include/gdal
+
+COPY requirements.txt /code/
+
+#required for gdal installation
+RUN pip install setuptools==57.5.0
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /code/wheels -r requirements.txt
+
+###FINAL IMAGE
+FROM python:3.9-slim
+
+ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWEITEBYTECODE 1
+
+RUN mkdir -p /code
+RUN mkdir -p /logs
+RUN mkdir -p /sock
+
+WORKDIR /code
+
+COPY apt_requirements.txt /code/
+RUN apt-get -y update
+RUN cat apt_requirements.txt | xargs apt -y --no-install-recommends install \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& apt autoremove \
+	&& apt autoclean
+
+COPY --from=builder /code/wheels /wheels
+COPY --from=builder /code/requirements.txt ./
+RUN pip install --no-cache /wheels/*
+
+COPY . /code
+ENTRYPOINT /code/docker/docker-entrypoint.local.sh

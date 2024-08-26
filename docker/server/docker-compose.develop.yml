@@ -1,0 +1,102 @@
+version: "3"
+
+services:
+  web:
+    image: ${ECR_REPOSITORY_URL}:${IMAGE_TAG}
+    restart: always
+    ports:
+      - ${WEB_APP_PORT}:8000
+    volumes:
+      - $PROJECT_DIR/static:/code/static
+      - $PROJECT_DIR/media:/code/media
+      - $PROJECT_DIR/logs/:/logs/
+    entrypoint: sh /code/docker/docker-entrypoint.prod.sh
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - boilerplate_nw
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1000M"
+
+  db:
+    image: mdillon/postgis:11-alpine
+    restart: always
+    volumes:
+      - $PROJECT_DIR/postgres_data:/var/lib/postgresql/data/
+    # ports:
+    #   - 5432:5432
+    env_file:
+      - .env
+    networks:
+      - boilerplate_nw
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "500M"
+
+  redis:
+    image: redis:alpine
+    restart: always
+    entrypoint: redis-server --appendonly yes
+    # ports:
+    #   - 6379:6379
+    volumes:
+      - $PROJECT_DIR/_redis_data:/var/lib/redis
+      - $PROJECT_DIR/redis/rc.local:/etc/rc.local
+    networks:
+      - boilerplate_nw
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: "400M"
+
+  worker:
+    image: ${ECR_REPOSITORY_URL}:${IMAGE_TAG}
+    restart: always
+    entrypoint: "celery -A project worker -f /logs/worker.log -l DEBUG"
+    depends_on:
+      - web
+      - redis
+    volumes:
+      - $PROJECT_DIR/logs/:/logs/
+      - $PROJECT_DIR/media:/code/media
+    env_file:
+      - .env
+    networks:
+      - boilerplate_nw
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "500M"
+
+  beat:
+    image: ${ECR_REPOSITORY_URL}:${IMAGE_TAG}
+    restart: always
+    entrypoint: "celery -A project beat -f /logs/beat.log -l DEBUG"
+    depends_on:
+      - web
+      - redis
+    volumes:
+      - $PROJECT_DIR/logs/:/logs/
+      - $PROJECT_DIR/media:/code/media
+    env_file:
+      - .env
+    networks:
+      - boilerplate_nw
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: "250M"
+
+networks:
+  boilerplate_nw:
+    driver: bridge

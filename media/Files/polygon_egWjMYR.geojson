@@ -1,0 +1,7 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","properties":{
+"house_no":1,
+"building_id":1,
+"building_structure":"main",
+"owner_name":"ram",
+"tole_name":"abc"
+},"geometry":{"coordinates":[[[85.31951262504742,27.707325545606352],[85.3178943289916,27.70543926954342],[85.31868601339193,27.70425388811796],[85.32046730329495,27.70377973194195],[85.32201574484412,27.706119569588296],[85.31951262504742,27.707325545606352]]],"type":"Polygon"}}]}

@@ -1,0 +1,94 @@
+version: '3'
+
+services:
+  web:
+    env_file: .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - .:/code
+    depends_on:
+      - db
+    ports:
+      - 8000:8000
+    entrypoint: sh /code/entrypoint.sh
+
+  db:
+    image: mdillon/postgis:11-alpine
+    restart: always
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data/
+    # ports:
+    #   - 5432:5432
+    env_file:
+      - .env
+
+  redis:
+    image: redis:alpine
+    restart: always
+    entrypoint: redis-server --appendonly yes
+    # ports:
+    #   - 6379:6379
+    volumes:
+      - ./_redis_data:/var/lib/redis
+      - ./redis/rc.local:/etc/rc.local
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    entrypoint: "celery -A project worker -f /logs/worker.log -l DEBUG"
+    depends_on:
+      - web
+      - redis
+    volumes:
+      - .:/code
+      - ./logs/:/logs/
+    env_file:
+      - .env
+
+
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    entrypoint: "celery -A project beat -f /logs/worker.log -l DEBUG"
+    depends_on:
+      - web
+      - redis
+    volumes:
+      - .:/code
+      - ./logs/:/logs/
+    env_file:
+      - .env
+
+  # fastapi:
+  #   env_file:
+  #     - .env
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   restart: always
+  #   volumes:
+  #     - .:/code
+  #     - ./logs/:/logs/
+  #   depends_on:
+  #     - db
+  #     - mongo
+  #   ports:
+  #     - 8001:8000
+  #   entrypoint: uvicorn main:app --host 0.0.0.0 --port 8000
+
+  # mongo:
+  #   image: mongo:6.0.2
+  #   restart: always
+  #   volumes:
+  #     - ./mongodb_data:/data/db
+  #   # ports:
+  #   #   - 27017:27017
+  #   env_file:
+  #     - .env

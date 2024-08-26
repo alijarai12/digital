@@ -1,0 +1,329 @@
+from django.urls import include, path, re_path
+from api.viewsets import core_viewsets, dashboard_viewsets, publicpage_viewsets
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+router.register(r"road-data", core_viewsets.RoadViewSet, basename="road_data")
+router.register(
+    r"upload-road-data", core_viewsets.RoadUploadViewSet, basename="upload_road_data"
+)
+
+router.register(
+    r"building-data", core_viewsets.BuildingViewSet, basename="building_data"
+)
+router.register(
+    r"upload-building-data",
+    core_viewsets.BuildingUploadViewSet,
+    basename="upload_building_data",
+)
+router.register(
+    r"building-images", core_viewsets.BuildingImageViewSet, basename="building-images"
+)
+router.register(
+    "palika-profile", core_viewsets.PalikaProfileViewSet, basename="palikaprofile"
+)
+router.register(
+    "palika-geometry-file",
+    core_viewsets.PalikaGeometryFileViewSet,
+    basename="palikageometryfile",
+)
+router.register(
+    "palika-ward", core_viewsets.PalikaWardGeometryViewSet, basename="palikaward"
+)
+router.register(
+    "palika-ward-geojson",
+    core_viewsets.PalikaWardGeojsonViewSet,
+    basename="palikaward-geojson",
+)
+router.register(
+    r"vector-layer", core_viewsets.VectorLayerViewSet, basename="vector_layer"
+)
+router.register(
+    r"raster-layer", core_viewsets.RasterLayerViewSet, basename="raster-layer"
+)
+router.register(
+    r"raster-file-tile",
+    core_viewsets.RasterFileTileViewSet,
+    basename="raster_file_tile",
+)
+router.register(
+    r"settings/physical-installation",
+    dashboard_viewsets.PhysicalInstallViewSet,
+    basename="physical-installation",
+)
+router.register(
+    r"public-page/building-data",
+    publicpage_viewsets.BuildingViewSet,
+    basename="building_data_public",
+),
+router.register(
+    "building-geometry",
+    core_viewsets.BuildingFeatureWKTViewSet,
+    basename="building-geometry-WKT",
+)
+router.register(
+    "road-geometry",
+    core_viewsets.RoadFeatureWKTViewSet,
+    basename="road-geometry-WKT",
+)
+router.register("history-logs", core_viewsets.HistoryLogViewSet, basename="historylog")
+
+
+urlpatterns = [
+    path("", include(router.urls)),
+    path(
+        "building-filter/",
+        dashboard_viewsets.BuildingFilterViewSet.as_view(),
+        name="building_filter",
+    ),
+    path(
+        "building-unique-values/",
+        dashboard_viewsets.BuildingUniqueValuesViewSet.as_view(),
+        name="building-unique-values",
+    ),
+    path(
+        "reverse-linestring",
+        core_viewsets.ReverseLinestring.as_view(),
+        name="reverse_linestring",
+    ),
+    path(
+        "building-unique-fields/",
+        dashboard_viewsets.BuildingUniqueFieldViewSet.as_view(),
+        name="building-unique-fields",
+    ),
+    path(
+        "dashboard/building-count/",
+        dashboard_viewsets.BuildingCountViewSet.as_view(),
+        name="building-count-list",
+    ),
+    path(
+        "dashboard/building-field-count/",
+        dashboard_viewsets.BuildingCountByFieldApi.as_view(),
+        name="building-field-count",
+    ),
+    path(
+        "building-vector-tile/<int:z>/<int:x>/<int:y>/",
+        core_viewsets.BuildingVectorTile.as_view(),
+        name="building_vector_tile",
+    ),
+    path(
+        "dashboard/feature-count/",
+        dashboard_viewsets.FeatureCountViewSet.as_view(),
+        name="building-road-count",
+    ),
+    path(
+        "map-popup/",
+        core_viewsets.MapPopUpViewSet.as_view({"get": "retrieve"}),
+        name="map-popup-detail",
+    ),
+    path(
+        "palika-boundary/<int:z>/<int:x>/<int:y>/",
+        core_viewsets.PalikaBoundaryVectorTile.as_view(),
+        name="palikaboundary",
+    ),
+    path(
+        "palika-ward-boundary/<int:z>/<int:x>/<int:y>/",
+        core_viewsets.PalikaWardBoundaryVectorTile.as_view(),
+        name="palikawardboundary",
+    ),
+    path(
+        "dashboard/road-count/",
+        dashboard_viewsets.RoadCountViewSet.as_view(),
+        name="road-count-list",
+    ),
+    path(
+        "dashboard/floor-count/",
+        dashboard_viewsets.UniqueFloorCountAPI.as_view(),
+        name="dashboard_floor_count",
+    ),
+    path(
+        "road-filter/",
+        dashboard_viewsets.RoadFilterViewSet.as_view(),
+        name="road_filter",
+    ),
+    path(
+        "road-unique-values/",
+        dashboard_viewsets.RoadUniqueValuesViewSet.as_view(),
+        name="road-unique-values",
+    ),
+    path(
+        "road-unique-fields/",
+        dashboard_viewsets.RoadUniqueFieldViewSet.as_view(),
+        name="road-unique-fields",
+    ),
+    path(
+        "road-vector-tile/<int:z>/<int:x>/<int:y>/",
+        core_viewsets.RoadVectorTile.as_view(),
+        name="road_vector_tile",
+    ),
+    path(
+        "vector-layer/<int:z>/<int:x>/<int:y>/",
+        core_viewsets.VectorTile.as_view(),
+        name="vector_layer_tile",
+    ),
+    path(
+        "raster-tile/<int:z>/<int:x>/<int:y>.png",
+        core_viewsets.RasterTiles.as_view(),
+        name="raster_layer_tile",
+    ),
+    path(
+        "raster-tiles/<int:z>/<int:x>/<int:y>.png",
+        core_viewsets.RasterYTiles.as_view(),
+        name="raster_layer_tile",
+    ),
+    path(
+        "dashboard/unique-ward-no/",
+        dashboard_viewsets.unique_ward_no,
+        name="unique_ward_no",
+    ),
+    path(
+        "user_ward_building_bbox/",
+        core_viewsets.user_ward_building_bbox,
+        name="user_ward_building_bbox",
+    ),
+    path(
+        "task-response/",
+        core_viewsets.get_upload_task_response,
+        name="task_response",
+    ),
+    path(
+        "building-advance-filtering/",
+        core_viewsets.building_advance_filter,
+        name="building_advance_filter",
+    ),
+    path(
+        "road-advance-filtering/",
+        core_viewsets.road_advance_filter,
+        name="road_advance_filter",
+    ),
+    path(
+        "filtered-overall-boundary/",
+        core_viewsets.filtered_overall_boundary,
+        name="building_advance_filter",
+    ),
+    path(
+        "download/",
+        core_viewsets.download,
+        name="download",
+    ),
+    path(
+        "advance-filter-building-vectortile/<int:z>/<int:x>/<int:y>/",
+        core_viewsets.AdvanceFilterBuildingVectorTile.as_view(),
+        name="advance_filter_building_vectortile",
+    ),
+    path(
+        "advance-filter-road-vectortile/<int:z>/<int:x>/<int:y>/",
+        core_viewsets.AdvanceFilterRoadVectorTile.as_view(),
+        name="advance_filter_road_vectortile",
+    ),
+    path(
+        "valid_operators/",
+        core_viewsets.valid_operators,
+        name="get_valid_operators",
+    ),
+    path(
+        "public-page/feature-count/",
+        publicpage_viewsets.FeatureCountViewSet.as_view(),
+        name="building-road-count",
+    ),
+    path(
+        "public-page/road-count/",
+        publicpage_viewsets.RoadCountViewSet.as_view(),
+        name="road-count-list",
+    ),
+    path(
+        "public-page/building-filter/",
+        publicpage_viewsets.BuildingFilterViewSet.as_view(),
+        name="building_filter",
+    ),
+    path(
+        "public-page/building-unique-values/",
+        publicpage_viewsets.BuildingUniqueValuesViewSet.as_view(),
+        name="building-unique-values",
+    ),
+    path(
+        "public-page/building-unique-fields/",
+        publicpage_viewsets.BuildingUniqueFieldViewSet.as_view(),
+        name="building-unique-fields",
+    ),
+    path(
+        "public-page/building-count/",
+        publicpage_viewsets.BuildingCountViewSet.as_view(),
+        name="building-count-list",
+    ),
+    path(
+        "public-page/road-filter/",
+        publicpage_viewsets.RoadFilterViewSet.as_view(),
+        name="road_filter",
+    ),
+    path(
+        "public-page/road-unique-values/",
+        publicpage_viewsets.RoadUniqueValuesViewSet.as_view(),
+        name="road-unique-values",
+    ),
+    path(
+        "public-page/road-unique-fields/",
+        publicpage_viewsets.RoadUniqueFieldViewSet.as_view(),
+        name="road-unique-fields",
+    ),
+    path(
+        "public-page/unique-ward-no/",
+        publicpage_viewsets.unique_ward_no,
+        name="unique_ward_no",
+    ),
+    path(
+        "public-page/count-unique-floors/",
+        publicpage_viewsets.UniqueFloorCountAPIView.as_view(),
+        name="count-unique-floors",
+    ),
+    path(
+        "public-page/map-popup/",
+        publicpage_viewsets.PublicMapPopUpViewSet.as_view({"get": "retrieve"}),
+        name="public-map-popup-detail",
+    ),
+    path(
+        "generate_house_numbers/",
+        core_viewsets.GenerateHouseNumbers.as_view(),
+        name="generate-house-numbers",
+    ),
+    path(
+        "features_in_bbox/",
+        core_viewsets.get_features_in_bbox,
+        name="bbox",
+    ),
+    path(
+        "overall_building_bbox/",
+        core_viewsets.overall_building_bbox,
+        name="building-bbox",
+    ),
+    path(
+        "delete-all-instances/",
+        core_viewsets.DeleteAllInstancesView.as_view(),
+        name="delete_all_instances",
+    ),
+    path(
+        "restore-history/<int:pk>/",
+        core_viewsets.RestoreHistoryAPIView.as_view(),
+        name="restore_history",
+    ),
+    path(
+        "visualization/building-plan-filter/",
+        dashboard_viewsets.BuildingPlanRegistrationFilterViewSet.as_view(),
+        name="building_plan_filter",
+    ),
+    path(
+        "visualization/building-plan-boundary/",
+        dashboard_viewsets.filtered_building_plan_boundary,
+        name="building_plan_overall_boundary",
+    ),
+    path(
+        "visualization/fields/",
+        dashboard_viewsets.FieldListView.as_view(),
+        name="model_fields",
+    ),
+    path(
+        "visualization/field-values/",
+        dashboard_viewsets.FieldValuesView.as_view(),
+        name="field_values",
+    ),
+]
